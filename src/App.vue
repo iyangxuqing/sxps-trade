@@ -4,11 +4,14 @@
   </div>
 </template>
 
-<script>
+<script type="text/ecmascript-6">
 export default {
   name: 'App'
 }
 </script>
 
-<style>
+<style scoped lang="stylus" rel="stylesheet/stylus">
+	#app {
+		height: 100%
+	}
 </style>
