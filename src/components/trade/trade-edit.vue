@@ -1,6 +1,5 @@
 <template>
 	<div class="page trade-edit-wrapper">
-		<Header title="订单编辑"></Header>
 		<div class="buyer">
 			<div class="buyer-row">
 				<div class="buyer-name">{{buyer.receive_name}}</div>
@@ -67,7 +66,7 @@
 
 	import { getBuyersByTrades } from '@/api/buyer'
 	import { getTrades } from '@/api/trade'
-	import Header from '@/components/header/header'
+	import BScroll from '@/base/better-scroll/src'
 
 	export default {
 		name: 'TradeEdit',
@@ -84,6 +83,9 @@
 			}
 		},
 		created() {
+			
+			this.$bus.$emit('setHeaderTitle', '订单')
+
 			getBuyersByTrades().then((buyers) => {
 				this.buyers = buyers
 				this.buyer = buyers[0]
@@ -92,7 +94,13 @@
 				}).then((trades) => {
 					this.trades = trades
 					console.log(trades)
-				})			})
+					this.$nextTick(() => {
+						this.scroll = new BScroll('.trades-wrapper', {
+							tap: true
+						})
+					})
+				})
+			})
 		},
 		methods: {
 			back() {
@@ -100,7 +108,7 @@
 			}
 		},
 		components: {
-			Header
+			BScroll
 		}
 	}
 </script>
@@ -112,6 +120,9 @@
 	.yuan
 		font-size: 12px
 		transform: scale(0.8)
+	
+	.trade-edit-wrapper
+		height: 100%
 		
 	.buyer
 		position: relative
@@ -142,7 +153,10 @@
 				width: 100%
 				height: 100%
 				opacity: 0.5
-
+				
+	.trades-wrapper
+		height: calc(100% - 60px)
+		overflow: hidden
 	.trades
 		padding: 15px
 	.trade

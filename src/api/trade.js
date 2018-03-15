@@ -13,6 +13,21 @@ export function getTrades(options) {
 				let trades = res.data.trades
 				for (let i in trades) {
 					trades[i].time = formatDate(trades[i].created, 'yyyy-MM-dd hh:mm:ss')
+					let num = 0
+					let amount = 0
+					let realNum = 0
+					let realAmount = 0
+					for (let j in trades[i].orders) {
+						let order = trades[i].orders[j]
+						num += Number(order.num)
+						amount += Number(order.num * order.price)
+						realNum += Number(order.realNum)
+						realAmount += Number(order.realNum * order.price)
+					}
+					trades[i].num = num
+					trades[i].amount = amount.toFixed(2)
+					trades[i].realNum = realNum
+					trades[i].realAmount = realAmount.toFixed(2)
 				}
 				resolve(trades)
 			}

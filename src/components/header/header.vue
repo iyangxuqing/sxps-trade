@@ -1,22 +1,40 @@
 <template>
 	<div class="header">
-		<div class="header-left" @tap="back"><img src="@/common/image/enter.png"/></div>
-		<div class="header-center">{{title}}</span></div>
+		<div class="header-left">
+			<div class="icon" v-if="back" @click="backTap"><img src="@/common/image/enter.png"/></div>
+		</div>
+		<div class="header-center">{{Title}}</span></div>
 		<div class="header-right"></div>
 	</div>
 </template>
 
 <script type="text/ecmascript-6">
+
 	export default {
 		props: {
 			title: {
 				type: String,
 				default: ''
+			},
+			back: {
+				type: Boolean,
+				default: false
 			}
 		},
+		data() {
+			return {
+				Title: this.title
+			}
+		},
+		created() {
+			this.$bus.$on('setHeaderTitle', (title) => {
+				this.Title = title
+			})
+		},
 		methods: {
-			back() {
+			backTap() {
 				this.$emit('back')
+				this.$bus.$emit('back')
 			}
 		}
 	}
@@ -24,9 +42,13 @@
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
 	.header
+		position: absolute
+		top: 0
+		left: 0
+		width: 100%
+		height: 45px
 		display: flex
 		align-items: center
-		height: 45px
 		font-size: 14px
 		box-sizing: border-box
 		border-bottom: 1px solid #ddd
@@ -39,10 +61,13 @@
 			height: 100%
 			cursor: pointer
 			padding: 12px
-			img
+			.icon
 				width: 100%
 				height: 100%
 				transform: rotate(180deg)
+				img
+					width: 100%
+					height: 100%
 		.header-center
 			flex-grow: 1
 			text-align: center
