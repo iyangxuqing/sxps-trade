@@ -1,6 +1,6 @@
 <template>
 	<div class="buyers-wrapper">
-		<Header title="买家列表" @back="back"></Header>
+		<Header @back="back"></Header>
 		<div class="buyers">
 			<div class="buyer" v-for="buyer in buyers" @tap="buyerTap(buyer)">
 				<div class="buyer-row">
@@ -30,19 +30,22 @@
 			getBuyersByTrades().then((buyers) => {
 				this.buyers = buyers
 			})
-			setTimeout(() => {
-				this.scroll = new BScroll('.buyers-wrapper', {
-					tap: true
-				})
-			}, 20)
+		},
+		mounted() {
+			this.scroll = new BScroll('.buyers-wrapper', {
+				tap: true
+			})
+		},
+		activated() {
+			this.$bus.$emit('setHeaderTitle', '买家列表')
 		},
 		methods: {
 			buyerTap(buyer) {
-				console.log(buyer)
-				this.$emit('selected', buyer)
+				this.$bus.$emit('selectedTradeBuyer', buyer)
+				this.back()
 			},
 			back() {
-				console.log('back')
+				this.$router.go(-1)
 			}
 		},
 		components: {

@@ -14,10 +14,11 @@
 				tabs: [{
 					id: 1,
 					text: '商品',
-					active: true
+					path: '/goods-buyer'
 				}, {
 					id: 2,
 					text: '订单',
+					path: '/trade-edit'
 				}, {
 					id: 3,
 					text: '采购'
@@ -30,6 +31,21 @@
 				}]
 			}
 		},
+
+		/* 当页面初次载入或刷新时，根据路径设置tab激活 */
+		created() {
+			let path = this.$route.path
+			this.updateActive(path)
+		},
+
+		/* 当在地址栏手工输入页面地址时，根据路径设置tab激活 */
+		watch: {
+			'$route': function(to, from) {
+				let path = to.path
+				this.updateActive(path)
+			}
+		},
+		
 		methods: {
 			tabTap(tab) {
 				for (let i in this.tabs) {
@@ -38,7 +54,18 @@
 						Vue.set(this.tabs[i], 'active', true)
 					}
 				}
-				this.$emit('tabbar', tab)
+				this.$router.push({
+					path: tab.path
+				})
+			},
+			updateActive(path) {
+				let tabs = this.tabs
+				for (let i in tabs) {
+					Vue.set(tabs[i], 'active', false)
+					if (path.indexOf(tabs[i].path) ==0) {
+						Vue.set(tabs[i], 'active', true)
+					}
+				}
 			}
 		}
 	}

@@ -1,6 +1,6 @@
 <template>
 	<div class="page trade-edit-wrapper">
-		<div class="buyer">
+		<div class="buyer" @click="buyerTap">
 			<div class="buyer-row">
 				<div class="buyer-name">{{buyer.receive_name}}</div>
 				<div class="buyer-phone">{{buyer.receive_phone || buyer.mobileNumber}}</div>
@@ -43,6 +43,9 @@
 								</div>
 							</div>
 						</div>
+						<div class="order order-add" @tap="orderAddTap(buyer)">
+							<div class="order-image"><img src="@/common/image/plus.png"/></div>
+						</div>
 					</div>
 
 					<div class="trade-counts">
@@ -83,29 +86,44 @@
 			}
 		},
 		created() {
-			
-			this.$bus.$emit('setHeaderTitle', '订单')
-
+			this.$bus.$on('selectedTradeBuyer', this.selectedTradeBuyer)
 			getBuyersByTrades().then((buyers) => {
 				this.buyers = buyers
 				this.buyer = buyers[0]
+			})
+		},
+		mounted() {
+			this.scroll = new BScroll('.trades-wrapper', {
+				tap: true
+			})
+		},
+		activated() {
+			this.$bus.$emit('setHeaderTitle', '订单')
+		},
+		watch: {
+			buyer() {
 				getTrades({
 					bid: this.buyer.bid
 				}).then((trades) => {
 					this.trades = trades
-					console.log(trades)
-					this.$nextTick(() => {
-						this.scroll = new BScroll('.trades-wrapper', {
-							tap: true
-						})
-					})
 				})
-			})
+			}
 		},
 		methods: {
-			back() {
-				this.$emit('back')
-			}
+			buyerTap() {
+				this.$router.push({
+					name: 'Buyers'
+				})
+			},
+			selectedTradeBuyer(buyer) {
+				this.buyer = buyer
+			},
+			orderAddTap(buyer) {
+				this.$router.push({
+					name: 'GoodsBuyer',
+					params: buyer
+				})
+			},
 		},
 		components: {
 			BScroll
@@ -212,6 +230,11 @@
 				padding-right: 5px
 				.order-number-price
 					margin-bottom: 4px
+			&.order-add
+				.order-image
+					padding: 16px
+					opacity: 0.5
+					border: 1px solid #ccc
 		.order + .order
 			border-top: 1px solid #ddd
 		

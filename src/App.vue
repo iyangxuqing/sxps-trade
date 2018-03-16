@@ -1,6 +1,6 @@
 <template>
   <div id="app" :class="{'pc': isPc}">
-  	<Header/>
+  	<Header :back="false"/>
   	<div class="content">
   		<keep-alive>
 		    <router-view/>
@@ -8,7 +8,7 @@
 	 		<Alert></Alert>
 			<ActionSheet></ActionSheet>
   	</div>
-    <TabBar @tabbar="onTabbar"/>
+    <TabBar/>
   </div>
 </template>
 
@@ -28,20 +28,6 @@
 	  },
 	  created() {
 	  	this.isPc = isPc()
-	  },
-	  methods: {
-	  	onTabbar(tab) {
-	  		if (tab.text == '商品') {
-					this.$router.push({
-						name: 'GoodsBuyer'
-					})	  		
-	  		} 
-	  		else if (tab.text == '订单') {
-					this.$router.push({
-						name: 'TradeEdit'
-					})	  		
-	  		}
-	  	}
 	  },
 	  components: {
 	  	Header,

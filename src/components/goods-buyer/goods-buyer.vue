@@ -14,7 +14,7 @@
 	import ItemsBuyer from '@/components/items/items-buyer'
 
 	export default {
-		created() {
+		activated() {
 			this.$bus.$emit('setHeaderTitle', '商品')
 		},
 		components: {

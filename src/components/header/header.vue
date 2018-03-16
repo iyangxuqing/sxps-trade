@@ -18,7 +18,7 @@
 			},
 			back: {
 				type: Boolean,
-				default: false
+				default: true
 			}
 		},
 		data() {
@@ -52,6 +52,7 @@
 		font-size: 14px
 		box-sizing: border-box
 		border-bottom: 1px solid #ddd
+		background-color: #fff
 		.header-left
 			flex-shrink: 0
 			display: flex
@@ -59,7 +60,6 @@
 			justify-content: center
 			width: 44px
 			height: 100%
-			cursor: pointer
 			padding: 12px
 			.icon
 				width: 100%

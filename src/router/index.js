@@ -24,9 +24,13 @@ export default new Router({
     	component: TradeEdit
     },
     {
-    	path: '/buyers',
+    	path: '/trade-edit/buyers',
     	name: 'Buyers',
     	component: Buyers
+    },
+    {
+      path: '*',
+      redirect: '/'
     }
   ]
 })
