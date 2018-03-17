@@ -8,6 +8,11 @@ export function getItems(options) {
 		axios.get(apiUrl + '?m=get', { params: options }).then((res) => {
 			if(res.data.errno === 0) {
 				let items = res.data.items
+				for (let i in items) {
+					for (let j in items[i].specs) {
+						items[i].specs[j].price = Number(items[i].specs[j].price).toFixed(2)
+					}
+				}
 				resolve(items)
 			} else {
 				reject(res)

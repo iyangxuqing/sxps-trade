@@ -1,6 +1,6 @@
 <template>
-	<div class="purchase" :class="{'show': show}" @click="cancel">
-		<div class="purchase-content" :class="{'show': show}" @click="contentTap">
+	<div class="purchase-wrapper" :class="{'show': show}" @click="cancel">
+		<div class="purchase" ref="purchase" @click="purchaseTap">
 			<div v-if="item">
 				<div class="purchase-info">
 					<div class="purchase-image" :class="{'show': show, 'large': imageLarge}" @click="imageTap">
@@ -15,7 +15,7 @@
 				</div>
 
 				<div class="purchase-specses" v-if="item.specs.length > 1">
-					<div class="purchase-specs" :class="{'active': specs.active}" v-for="(specs, index) in item.specs" v-if="index > 0" @click="specsTap">{{specs.title}}<span v-if="specs.num">{{specs.num}}</span></div>
+					<div class="purchase-specs" :class="{'active': index==specsIndex}" v-for="(specs, index) in item.specs" v-if="index > 0" @click="specsTap(index)">{{specs.title}}<span v-if="specs.num">{{specs.num}}</span></div>
 				</div>
 
 				<div class="purchase-row purchase-number">
@@ -26,7 +26,7 @@
 						</div>
 					</div>
 					<div class="purchase-number-input">
-						<input :value="item.specs[specsIndex].num==0 ? '' : item.specs[specsIndex].num" placeholder="0" maxlength="4" @blur="numberInput" />
+						<input :value="item.specs[specsIndex].num==0 ? '' : item.specs[specsIndex].num" placeholder="0" maxlength="4" @blur="numberInput" @keyup.enter="inputEnter" />
 					</div>
 					<div class="purchase-number-icon" @click="numberPlus">
 						<div class="purchase-number-icon-inner">
@@ -36,7 +36,7 @@
 				</div>
 
 				<div class="purchase-row purchase-message">
-					<input :value="item.specs[specsIndex].message" placeholder="买家留言" maxlength="27" @blur="messageInput" />
+					<input :value="item.specs[specsIndex].message" placeholder="买家留言" maxlength="27" @blur="messageInput" @keyup.enter="inputEnter" />
 				</div>
 
 				<div class="purchase-row purchase-buttons">
@@ -49,51 +49,104 @@
 </template>
 
 <script type="text/ecmascript-6">
+
+	import Vue from 'vue'
+
 	export default {
 		data() {
 			return {
 				item: null,
 				show: false,
-				imageLarge: false,
-				specsIndex: 0
+				specsIndex: 0,
+				imageLarge: false
 			}
 		},
 		created() {
-			this.$bus.$on('purchase-show', (item) => {
+			this.$bus.$on('purchase-show', (item, buyer) => {
 				this.item = item
+				this.specsIndex = item.specs.length > 1 ? 1 : 0
+				this.buyer = buyer
 				this.show = true
-				console.log('purchase', item)
+				this.$nextTick(() => {
+					this._setHeight()
+				})
 			})
 		},
 		methods: {
-			contentTap(e) {
-				e.preventDefault()
-				e.stopPropagation()
-			},
 			cancel() {
+				this.$refs.purchase.style.height = 0
+				this.imageLarge = false
 				this.show = false
 			},
 			confirm() {
 				this.cancel()
 			},
+			purchaseTap(e) {
+				e.preventDefault()
+				e.stopPropagation()
+			},
 			imageTap() {
-				console.log('imageTap')
 				this.imageLarge = !this.imageLarge
 			},
-			specsTap() {
-
+			specsTap(index) {
+				let item = this.item
+				for(let i in item.specs) {
+					Vue.set(item.specs[i], 'active', false)
+				}
+				Vue.set(item.specs[index], 'active', true)
+				this.specsIndex = index
 			},
 			numberPlus() {
-
+				let item = this.item
+				let specsIndex = this.specsIndex
+				let specs = item.specs[specsIndex]
+				if (!specs.num) Vue.set(specs, 'num', 0)
+				if (specs.num < 9999) specs.num = Number(specs.num) + 1
+				Vue.set(item, 'num', 0)
+				for (let i in item.specs) {
+					item.num += Number(item.specs[i].num)
+				}
 			},
 			numberMinus() {
-
+				let item = this.item
+				let specsIndex = this.specsIndex
+				let specs = item.specs[specsIndex]
+				if (!specs.num) Vue.set(specs, 'num', 0)
+				if (specs.num > 0) specs.num--
+				if (specs.num < 0) specs.num = 0
+				Vue.set(item, 'num', 0)
+				for (let i in item.specs) {
+					item.num += Number(item.specs[i].num)
+				}
 			},
-			numberInput() {
-
+			inputEnter(e) {
+				e.target.blur()
 			},
-			messageInput() {
-
+			numberInput(e) {
+				let item = this.item
+				let specsIndex = this.specsIndex
+				let specs = item.specs[specsIndex]
+				Vue.set(specs, 'num', e.target.value)
+				if (specs.num < 0) specs.num = 0
+				Vue.set(item, 'num', 0)
+				for (let i in item.specs) {
+					item.num += Number(item.specs[i].num)
+				}
+			},
+			messageInput(e) {
+				let item = this.item
+				let specsIndex = this.specsIndex
+				let specs = item.specs[specsIndex]
+				Vue.set(specs, 'message', e.target.value)
+			},
+			_setHeight() {
+				let height = 0
+				this.children = this.$refs.purchase.children
+				for (let i = 0; i < this.children.length; i++) {
+					let child = this.children[i]
+					height += child.clientHeight
+				}
+				this.$refs.purchase.style.height = height + 'px'
 			}
 		}
 	}
@@ -101,7 +154,7 @@
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
 
-	.purchase
+	.purchase-wrapper
 		position: absolute
 		left: 0
 		right: 0
@@ -111,7 +164,7 @@
 		background: rgba(0, 0, 0, 0.4)
 		&.show
 			height: 100%
-		.purchase-content
+		.purchase
 			position: absolute
 			left: 0
 			right: 0
@@ -120,8 +173,6 @@
 			background-color: #fff
 			transition: all 300ms ease
 			transform: translate3d(0, 0, 0)
-			&.show
-				height: 351px
 				
 			.purchase-info
 				height: 110px
@@ -139,15 +190,12 @@
 					transition: all 300ms ease
 					transform: translate3d(0, 0, 0)
 					&.show
-						margin-top: -50px
-						&.large
-							top: -25px
-							left: 0
-							width: 375px
-							height: 375px
-					img
-						width: 100%
-						height: 100%
+						top: -50px
+					&.show.large
+						top: -165px
+						left: 0
+						width: 375px
+						height: 375px
 					
 				.purchase-text
 					position: absolute

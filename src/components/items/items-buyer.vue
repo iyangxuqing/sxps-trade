@@ -1,6 +1,6 @@
 <template>
-	<div class="items">
-		<div class="items-wrapper">
+	<div class="items-wrapper">
+		<div class="items">
 			<div class="item" v-for="item in categoryItems" @tap="itemTap(item)">
 				<div class="item-image"><img :src="item.specs[0].image"/></div>
 				<div class="item-title">{{item.specs[0].title}}</div>
@@ -23,16 +23,15 @@
 	 		}
  		},
 		created() {
-			getItems({onShelf: 1}).then((items) => {
-				this.items = items
-				this._initScroll()
-			})
 			this.$bus.$on('activeCateId', (cid) => {
 				this.cid = cid
 			})
-		},
-		activated() {
-			// this._initScroll()
+			getItems({onShelf: 1}).then((items) => {
+				this.items = items
+				setTimeout(() => {
+					this.scroll = new BScroll('.items-wrapper', { tap: true })
+				}, 20)
+			})
 		},
 		watch: {
 			'cid': function() {
@@ -56,32 +55,20 @@
 			}			
 		},
 		methods: {
-			itemTap(item) {
-				console.log('itemTap', item)
+			itemTap(item, buyer) {
 				this.$bus.$emit('purchase-show', item)
-			},
-			_initScroll() {
-				setTimeout(() => {
-					if(!this.scroll) {
-						this.scroll = new BScroll('.items', {
-							tap: true,
-						})
-					}
-				}, 20)
-			},
-		},
-		components: {
+			}
 		}
 	}
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
 
-	.items
+	.items-wrapper
 		position: relative
 		height: 100%
 		overflow: hidden
-		.items-wrapper
+		.items
 			display: flex
 			flex-wrap: wrap
 			padding: 15px
