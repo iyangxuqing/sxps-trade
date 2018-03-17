@@ -5,10 +5,11 @@
   		<keep-alive>
 		    <router-view/>
   		</keep-alive>
-	 		<Alert></Alert>
-			<ActionSheet></ActionSheet>
   	</div>
     <TabBar/>
+ 		<Purchase></Purchase>
+ 		<Alert></Alert>
+		<ActionSheet></ActionSheet>
   </div>
 </template>
 
@@ -16,6 +17,7 @@
 	import { isPc } from '@/common/js/dom'
 	import Header from '@/components/header/header'
 	import TabBar from '@/components/tabbar/tabbar'
+	import Purchase from '@/components/purchase/purchase'
 	import Alert from '@/components/alert/alert'
 	import ActionSheet from '@/components/actionsheet/actionsheet'
 	
@@ -32,6 +34,7 @@
 	  components: {
 	  	Header,
 	  	TabBar,
+	  	Purchase,
 	  	Alert,
 	  	ActionSheet
 	  }
@@ -44,6 +47,7 @@
 		width: 100%
 		height: 100%
 		padding: 45px 0
+		overflow: hidden
 		&.pc
 			top: 50%
 			left: 50%

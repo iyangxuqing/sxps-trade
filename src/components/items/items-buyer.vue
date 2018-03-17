@@ -58,6 +58,7 @@
 		methods: {
 			itemTap(item) {
 				console.log('itemTap', item)
+				this.$bus.$emit('purchase-show', item)
 			},
 			_initScroll() {
 				setTimeout(() => {
@@ -68,6 +69,8 @@
 					}
 				}, 20)
 			},
+		},
+		components: {
 		}
 	}
 </script>
@@ -75,6 +78,7 @@
 <style scoped lang="stylus" rel="stylesheet/stylus">
 
 	.items
+		position: relative
 		height: 100%
 		overflow: hidden
 		.items-wrapper
