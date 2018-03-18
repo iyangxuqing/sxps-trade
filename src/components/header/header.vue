@@ -1,7 +1,7 @@
 <template>
 	<div class="header">
 		<div class="header-left">
-			<div class="icon" v-if="back" @click="backTap"><img src="@/common/image/enter.png"/></div>
+			<div class="icon" v-if="Back" @click="backTap"><img src="@/common/image/enter.png"/></div>
 		</div>
 		<div class="header-center">{{Title}}</span></div>
 		<div class="header-right"></div>
@@ -23,13 +23,23 @@
 		},
 		data() {
 			return {
-				Title: this.title
+				Title: this.title,
+				Back: this.back
 			}
 		},
 		created() {
-			this.$bus.$on('setHeaderTitle', (title) => {
-				this.Title = title
+			this.$bus.$on('setHeader', (options) => {
+				this.Title = options.title
+				this.Back = options.back
 			})
+		},
+		watch: {
+			'$route': function(to, from) {
+				if (to.name == 'GoodsBuyer') {
+					this.Title = '商品'
+					this.Back = false
+				}
+			}
 		},
 		methods: {
 			backTap() {

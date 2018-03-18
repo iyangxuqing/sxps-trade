@@ -54,7 +54,7 @@
 						Vue.set(this.tabs[i], 'active', true)
 					}
 				}
-				this.$router.push({
+				this.$router.replace({
 					path: tab.path
 				})
 			},

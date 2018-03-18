@@ -1,25 +1,17 @@
 <template>
 	<div class="page trade-edit-wrapper">
-		<div class="buyer" @click="buyerTap">
-			<div class="buyer-row">
-				<div class="buyer-name">{{buyer.receive_name}}</div>
-				<div class="buyer-phone">{{buyer.receive_phone || buyer.mobileNumber}}</div>
-			</div>
-			<div class="buyer-row">
-				<div class="buyer-address">{{buyer.receive_district}}{{buyer.receive_address}}</div>
-			</div>
-			<div class="buyer-more">
-				<img src="@/common/image/enter.png">
-			</div>
-		</div>
 		<div class="trades-wrapper">
 			<div class="trades">
 				<div class="trade" v-for="trade in trades">
-					
 					<div class="trade-info">
 						<div class="trade-labels">
-							<div class="trade-label tid">订单号：{{trade.id}}</div>
-							<div class="trade-label time gray">{{trade.time}}</div>
+							<div class="trade-label tid">订单编号：{{trade.id}}</div>
+							<div class="trade-label time">提交时间：{{trade.time}}</div>
+							<div class="trade-label">
+								<span class="trade-label-name">收货姓名：{{trade.receive_name}}</span>
+								<span class="trade-label-phone">{{trade.receive_phone || trade.mobileNumber}}</span>
+							</div>
+							<div class="trade-label">收货地址：{{trade.receive_district}}{{trade.receive_address}}</div>
 						</div>
 						<div class="trade-labels">
 							<div class="trade-label">{{trade.status}}</div>
@@ -27,24 +19,26 @@
 					</div>
 					
 					<div class="trade-orders">
-						<div class="order" v-for="order in trade.orders">
+						<div class="order" v-for="order in trade.orders" @tap="orderTap(order)">
 							<div class="order-image"><img :src="order.image"/></div>
 							<div class="order-text">
 								<div class="order-text-title">{{order.title}}<span v-if="order.specs">-{{order.specs}}</span></div>
-								<div class="order-text-descs gray" v-if="order.descs">{{order.descs}}</div>
-								<div class="order-text-message gray" v-if="order.message">买家留言：{{order.message}}</div>
+								<div class="order-text-descs" v-if="order.descs">{{order.descs}}</div>
+								<div class="order-text-message" v-if="order.message">买家留言：{{order.message}}</div>
 							</div>
 							<div class="order-number">
 								<div class="order-number-price"><span class="yuan">￥</span>{{order.price}}</div>
 								<div class="order-number-num" v-if="order.realNum==''">{{order.num}}</div>
 								<div class="order-number-num" v-if="order.realNum!=''">
 									<span>{{order.realNum}}</span>
-									<span class="gray">{{'(' + order.num + ')'}}</span>
+									<span style="color: #888">{{'(' + order.num + ')'}}</span>
 								</div>
 							</div>
 						</div>
-						<div class="order order-add" @tap="orderAddTap(buyer)">
-							<div class="order-image"><img src="@/common/image/plus.png"/></div>
+						<div class="order order-add" @tap="orderAddNewTap(trade.id)">
+							<div class="order-add-left"><img src="@/common/image/plus.png"/></div>
+							<div class="order-add-middle">添加新订单</div>
+							<div class="order-add-right" @tap.stop="orderSelectTap(trade.id)"><img src="@/common/image/enter.png"/></div>
 						</div>
 					</div>
 
@@ -67,30 +61,23 @@
 
 <script type="text/ecmascript-6">
 
-	import { getBuyersByTrades } from '@/api/buyer'
 	import { getTrades } from '@/api/trade'
 	import BScroll from '@/base/better-scroll/src'
 
 	export default {
 		name: 'TradeEdit',
-		props: {
-			title: {
-				type: String,
-				default: ''
-			}
-		},
 		data() {
 			return {
-				buyer: {},
 				trades: []
 			}
 		},
 		created() {
-			this.$bus.$on('selectedTradeBuyer', this.selectedTradeBuyer)
-			getBuyersByTrades().then((buyers) => {
-				this.buyers = buyers
-				this.buyer = buyers[0]
+			this.$bus.$on('purchase-confirm', (order) => {
+				console.log(order)
 			})
+			getTrades().then((trades) => {
+				this.trades = trades
+			})			
 		},
 		mounted() {
 			this.scroll = new BScroll('.trades-wrapper', {
@@ -98,111 +85,87 @@
 			})
 		},
 		activated() {
-			this.$bus.$emit('setHeaderTitle', '订单')
-		},
-		watch: {
-			buyer() {
-				getTrades({
-					bid: this.buyer.bid
-				}).then((trades) => {
-					this.trades = trades
-				})
+			this.$bus.$emit('setHeader', {
+				title: '订单',
+				back: false
+			})
+			if (this.scroll) {
+				this.scroll.refresh()
 			}
 		},
 		methods: {
-			buyerTap() {
-				this.$router.push({
-					name: 'Buyers'
+			orderTap(order) {
+				this.tid = order.tid
+				this.$bus.$emit('purchase-show', {
+					iid: order.iid,
+					sid: order.sid,
+					num: order.num,
+					message: order.message
 				})
 			},
-			selectedTradeBuyer(buyer) {
-				this.buyer = buyer
+			orderAddNewTap(tid) {
+				this.tid = tid
+				console.log(tid)
+				console.log('order add new tap')
 			},
-			orderAddTap(buyer) {
+			orderSelectTap(tid) {
+				this.tid = tid
 				this.$router.push({
-					name: 'GoodsBuyer',
-					params: buyer
+					name: 'TradeEdit-GoodsBuyer',
+					params: {
+						tid: tid,
+						pageBack: true,
+						pageTitle: '商品选购'
+					}
 				})
-			},
+			}
 		},
 		components: {
-			BScroll
+			// BScroll
 		}
 	}
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
 
-	.gray
-		color: #888
 	.yuan
 		font-size: 12px
 		transform: scale(0.8)
 	
 	.trade-edit-wrapper
-		height: 100%
-		
-	.buyer
 		position: relative
-		display: flex
-		flex-direction: column
-		justify-content: center
-		height: 60px
-		padding-left: 20px
-		padding-right: 20px
-		border-bottom: 1px solid #ddd
-		.buyer-row
-			display: flex
-			.buyer-name
-				width: 60px
-			.buyer-address
-				color: #888
-		.buyer-row + .buyer-row
-			margin-top: 6px
-		.buyer-more
-			position: absolute
-			top: 50%
-			right: 0
-			transform: translateY(-50%)
-			width: 50px
-			height: 50px
-			padding: 15px
-			img
-				width: 100%
-				height: 100%
-				opacity: 0.5
-				
+		height: 100%
+		overflow: hidden
 	.trades-wrapper
-		height: calc(100% - 60px)
+		height: 100%
 		overflow: hidden
 	.trades
 		padding: 15px
 	.trade
-		font-size: 14px
+		font-size: 13px
 		color: #333
+		& + &
+			margin-top: 15px
 		.trade-info
 			display: flex
 			align-items: center
 			justify-content: space-between
-			height: 55px
+			height: 86px
 			padding-left: 10px
 			padding-right: 10px
 			background-color: #f0f0f0
-			.trade-label.tid
-				font-size: 14px
 			.trade-label + .trade-label
-				margin-top: 8px
+				margin-top: 5px
 		.order
 			display: flex
 			align-items: center
 			height: 80px
+			& + .order
+				border-top: 1px solid #ddd
 			.order-image
 				flex-shrink: 0
 				width: 70px
 				height: 70px
-				img
-					width: 100%
-					height: 100%
 			.order-text
 				flex-grow: 1
 				display: flex
@@ -231,12 +194,23 @@
 				.order-number-price
 					margin-bottom: 4px
 			&.order-add
-				.order-image
+				.order-add-left
+					flex-shrink: 0
+					width: 70px
+					height: 70px
 					padding: 16px
 					opacity: 0.5
 					border: 1px solid #ccc
-		.order + .order
-			border-top: 1px solid #ddd
+				.order-add-middle
+					flex-grow: 1
+					padding-left: 5px
+					color: #888
+				.order-add-right
+					width: 70px
+					height: 70px
+					padding: 25px
+					margin-right: -10px
+					opacity: 0.7
 		
 		.trade-counts
 			display: flex
@@ -253,6 +227,4 @@
 				.trade-count-col
 					width: 100px
 					text-align: right
-	.trade + .trade
-		margin-top: 15px
 </style>

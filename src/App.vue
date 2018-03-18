@@ -58,6 +58,7 @@
 			border: 1px solid #ccc
 			box-shadow: 0px 0px 10px 2px #ccc		
 		.content
+			position: relative
 			height: 100%
 			overflow: hidden
 </style>

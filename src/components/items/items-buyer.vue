@@ -55,8 +55,10 @@
 			}			
 		},
 		methods: {
-			itemTap(item, buyer) {
-				this.$bus.$emit('purchase-show', item)
+			itemTap(item) {
+				this.$bus.$emit('purchase-show', {
+					item: item
+				})
 			}
 		}
 	}

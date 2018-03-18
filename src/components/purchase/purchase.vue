@@ -51,6 +51,7 @@
 <script type="text/ecmascript-6">
 
 	import Vue from 'vue'
+	import { getItems } from '@/api/items'
 
 	export default {
 		data() {
@@ -62,14 +63,45 @@
 			}
 		},
 		created() {
-			this.$bus.$on('purchase-show', (item, buyer) => {
-				this.item = item
-				this.specsIndex = item.specs.length > 1 ? 1 : 0
-				this.buyer = buyer
-				this.show = true
-				this.$nextTick(() => {
-					this._setHeight()
-				})
+			this.$bus.$on('purchase-show', (options) => {
+				this.tid = options.tid
+				if (options.item) {
+					this.item = options.item
+					this.specsIndex = options.item.specs.length > 1 ? 1 : 0
+					this.show = true
+					this.$nextTick(() => {
+						this._setHeight()
+					})					
+				}
+				else if (options.iid) {
+					getItems({ onShelf: '1'}).then((items) => {
+						let item = null
+						let specsIndex = 0
+						for (let i in items) {
+							if (items[i].id == options.iid) {
+								item = items[i]
+								specsIndex = item.specs.length > 1 ? 1 : 0
+								if (options.sid) {
+									for (let j in item.specs) {
+										if (item.specs[j].id == options.sid) {
+											specsIndex = j
+											break
+										}
+									}
+								}
+								item.specs[specsIndex].num = options.num
+								item.specs[specsIndex].message = options.message
+								break
+							}
+						}
+						this.item = item
+						this.specsIndex = specsIndex
+						this.show = true
+						this.$nextTick(() => {
+							this._setHeight()
+						})					
+					})
+				}
 			})
 		},
 		methods: {
@@ -79,6 +111,12 @@
 				this.show = false
 			},
 			confirm() {
+				this.$bus.$emit('purchase-confirm', {
+					iid: this.item.id,
+					sid: this.item.specs[this.specsIndex].id,
+					num: this.item.specs[this.specsIndex].num,
+					message: this.item.specs[this.specsIndex].message
+				})
 				this.cancel()
 			},
 			purchaseTap(e) {
