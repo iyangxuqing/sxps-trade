@@ -63,8 +63,8 @@
 			}
 		},
 		created() {
-			this.$bus.$on('purchase-show', (options) => {
-				this.tid = options.tid
+			this.$bus.$on('purchase-show', (options={}) => {
+				this.tid = options.tid || options.order.tid
 				if (options.item) {
 					this.item = options.item
 					this.specsIndex = options.item.specs.length > 1 ? 1 : 0
@@ -73,24 +73,23 @@
 						this._setHeight()
 					})					
 				}
-				else if (options.iid) {
+				else if (options.order) {
+					this.order = options.order
 					getItems({ onShelf: '1'}).then((items) => {
-						let item = null
+						let item = {}
 						let specsIndex = 0
 						for (let i in items) {
-							if (items[i].id == options.iid) {
+							if (items[i].id == options.order.iid) {
 								item = items[i]
 								specsIndex = item.specs.length > 1 ? 1 : 0
-								if (options.sid) {
-									for (let j in item.specs) {
-										if (item.specs[j].id == options.sid) {
-											specsIndex = j
-											break
-										}
+								for (let j in item.specs) {
+									if (item.specs[j].id == options.order.sid) {
+										specsIndex = j
+										break
 									}
 								}
-								item.specs[specsIndex].num = options.num
-								item.specs[specsIndex].message = options.message
+								item.specs[specsIndex].num = options.order.num
+								item.specs[specsIndex].message = options.order.message
 								break
 							}
 						}
@@ -111,12 +110,29 @@
 				this.show = false
 			},
 			confirm() {
-				this.$bus.$emit('purchase-confirm', {
-					iid: this.item.id,
-					sid: this.item.specs[this.specsIndex].id,
-					num: this.item.specs[this.specsIndex].num,
-					message: this.item.specs[this.specsIndex].message
-				})
+				let orders = []
+				for (let i in this.item.specs) {
+					if (this.order && this.order.iid == this.item.id && this.order.sid == this.item.specs[i].id) {
+						this.order.num = this.item.specs[i].num
+						this.order.message = this.item.specs[i].message
+						orders.push(this.order)
+					} else if (this.item.specs[i].num > 0) {
+						orders.push({
+							id: Date.now() + i + '',
+							tid: this.tid,
+							iid: this.item.id,
+							sid: this.item.specs[i].id,
+							title: this.item.specs[0].title,
+							specs: i > 0 ? this.item.specs[i].title : '',
+							image: this.item.specs[i].image,
+							descs: this.item.specs[i].descs,
+							price: this.item.specs[i].price,
+							num: this.item.specs[i].num,
+							message: this.item.specs[i].message
+						})
+					}
+				}
+				this.$bus.$emit('purchase-confirm', orders)
 				this.cancel()
 			},
 			purchaseTap(e) {

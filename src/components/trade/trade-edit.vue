@@ -28,8 +28,8 @@
 							</div>
 							<div class="order-number">
 								<div class="order-number-price"><span class="yuan">￥</span>{{order.price}}</div>
-								<div class="order-number-num" v-if="order.realNum==''">{{order.num}}</div>
-								<div class="order-number-num" v-if="order.realNum!=''">
+								<div class="order-number-num" v-if="!order.realNum">{{order.num}}</div>
+								<div class="order-number-num" v-if="order.realNum">
 									<span>{{order.realNum}}</span>
 									<span style="color: #888">{{'(' + order.num + ')'}}</span>
 								</div>
@@ -61,6 +61,7 @@
 
 <script type="text/ecmascript-6">
 
+	import Vue from 'vue'
 	import { getTrades } from '@/api/trade'
 	import BScroll from '@/base/better-scroll/src'
 
@@ -72,9 +73,39 @@
 			}
 		},
 		created() {
-			this.$bus.$on('purchase-confirm', (order) => {
-				console.log(order)
+			this.$bus.$on('purchase-confirm', (orders) => {
+				let trades = this.trades
+				let tradeIndex = -1
+				for (let i in trades) {
+					if (trades[i].id == orders[0].tid) {
+						tradeIndex = i
+						break
+					}
+				}
+				let trade = trades[tradeIndex]
+				for (let i in orders) {
+					let orderIndex = -1
+					for (let j in trade.orders) {
+						console.log(orders[i].id, trade.orders[j].id)
+						if (orders[i].id == trade.orders[j].id) {
+							orderIndex = j
+							break
+						}
+					}
+					console.log('orderIndex', orderIndex)
+					if (orderIndex < 0) {
+						orderIndex = trade.orders.length
+						trade.orders.push(orders[i])
+						console.log(trade.orders)
+					} else {
+						Vue.set(trade.orders, orderIndex, orders[i])
+					}
+				}
+				trade.orders = trade.orders.filter((order) => {
+					return order.num > 0
+				})
 			})
+
 			getTrades().then((trades) => {
 				this.trades = trades
 			})			
@@ -91,17 +122,13 @@
 			})
 			if (this.scroll) {
 				this.scroll.refresh()
+				this.scroll.scrollTo(0, this.scrollY || 0)
 			}
 		},
 		methods: {
 			orderTap(order) {
-				this.tid = order.tid
-				this.$bus.$emit('purchase-show', {
-					iid: order.iid,
-					sid: order.sid,
-					num: order.num,
-					message: order.message
-				})
+				this.scrollY = this.scroll.y
+				this.$bus.$emit('purchase-show', { order: order })
 			},
 			orderAddNewTap(tid) {
 				this.tid = tid
@@ -109,7 +136,7 @@
 				console.log('order add new tap')
 			},
 			orderSelectTap(tid) {
-				this.tid = tid
+				this.scrollY = this.scroll.y
 				this.$router.push({
 					name: 'TradeEdit-GoodsBuyer',
 					params: {

@@ -15,6 +15,12 @@
 	import { getItems } from '@/api/items'
 
 	export default {
+		props: {
+			tid: {
+				type: String,
+				default: ''
+			}
+		},
 	 	data() {
 	 		return {
 	 			cid: '',
@@ -25,6 +31,9 @@
 		created() {
 			this.$bus.$on('activeCateId', (cid) => {
 				this.cid = cid
+			})
+			this.$bus.$on('purchase-confirm', () => {
+				this.$router.go(-1)
 			})
 			getItems({onShelf: 1}).then((items) => {
 				this.items = items
@@ -57,6 +66,7 @@
 		methods: {
 			itemTap(item) {
 				this.$bus.$emit('purchase-show', {
+					tid: this.tid,
 					item: item
 				})
 			}
