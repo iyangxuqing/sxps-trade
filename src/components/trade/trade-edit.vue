@@ -24,7 +24,7 @@
 							<div class="order-text">
 								<div class="order-text-title">{{order.title}}<span v-if="order.specs">-{{order.specs}}</span></div>
 								<div class="order-text-descs" v-if="order.descs">{{order.descs}}</div>
-								<div class="order-text-message" v-if="order.message">买家留言：{{order.id}} - {{order.message}}</div>
+								<div class="order-text-message" v-if="order.message">买家留言：{{order.message}}</div>
 							</div>
 							<div class="order-number">
 								<div class="order-number-price" v-if="order.price"><span class="yuan">￥</span>{{order.price}}</div>

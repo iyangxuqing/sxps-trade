@@ -66,7 +66,7 @@
 			this.$bus.$on('purchase-show', (options={}) => {
 				this.tid = options.tid || options.order.tid
 				if (options.item) {
-					this.item = options.item
+					this.item = JSON.parse(JSON.stringify(options.item))
 					this.specsIndex = options.item.specs.length > 1 ? 1 : 0
 					this.show = true
 					this._setHeight()
@@ -78,7 +78,8 @@
 						let specsIndex = 0
 						for (let i in items) {
 							if (items[i].id == options.order.iid) {
-								item = items[i]
+								/* 不污染全局的items */
+								item = JSON.parse(JSON.stringify(items[i]))
 								specsIndex = item.specs.length > 1 ? 1 : 0
 								for (let j in item.specs) {
 									if (item.specs[j].id == options.order.sid) {
@@ -116,7 +117,7 @@
 						orders.push(this.order)
 					} else if (this.item.specs[i].num > 0) {
 						orders.push({
-							id: Date.now() + i + '',
+							id: Number(Date.now()) + Number(i) + '',
 							tid: this.tid,
 							iid: this.item.id,
 							sid: this.item.specs[i].id,
