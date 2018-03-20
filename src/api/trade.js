@@ -9,7 +9,7 @@ export function getTrades(options) {
 		axios.get(apiUrl + '?m=get', {
 			params : options
 		}).then((res) => {
-			if(res.data.errno === 0) {
+			if (res.data.errno === 0) {
 				let trades = res.data.trades
 				for (let i in trades) {
 					trades[i].time = formatDate(trades[i].created, 'yyyy-MM-dd hh:mm:ss')
@@ -35,3 +35,12 @@ export function getTrades(options) {
 	})
 }
 
+export function setOrders(orders) {
+	return new Promise(function(resolve, reject) {
+		axios.post(apiUrl + '?m=setOrders', orders).then((res) => {
+			if (res.data.errno === 0) {
+				resolve(res.data)
+			}
+		})
+	})
+}

@@ -24,10 +24,10 @@
 							<div class="order-text">
 								<div class="order-text-title">{{order.title}}<span v-if="order.specs">-{{order.specs}}</span></div>
 								<div class="order-text-descs" v-if="order.descs">{{order.descs}}</div>
-								<div class="order-text-message" v-if="order.message">买家留言：{{order.message}}</div>
+								<div class="order-text-message" v-if="order.message">买家留言：{{order.id}} - {{order.message}}</div>
 							</div>
 							<div class="order-number">
-								<div class="order-number-price"><span class="yuan">￥</span>{{order.price}}</div>
+								<div class="order-number-price" v-if="order.price"><span class="yuan">￥</span>{{order.price}}</div>
 								<div class="order-number-num" v-if="!order.realNum">{{order.num}}</div>
 								<div class="order-number-num" v-if="order.realNum">
 									<span>{{order.realNum}}</span>
@@ -45,11 +45,11 @@
 					<div class="trade-counts">
 						<div class="trade-count" v-if="trade.status=='买家提交'">
 							<div class="trade-count-col">合计 数量：{{trade.num}}</div>
-							<div class="trade-count-col">金额：￥{{trade.amount}}</div>
+							<div class="trade-count-col">金额：<span class="yuan">￥</span>{{trade.amount}}</div>
 						</div>
 						<div class="trade-count" v-if="trade.status!='买家提交'">
 							<div class="trade-count-col">合计 数量：{{trade.realNum}}</div>
-							<div class="trade-count-col">金额：￥{{trade.realAmount}}</div>
+							<div class="trade-count-col">金额：<span class="yuan">￥</span>{{trade.realAmount}}</div>
 						</div>
 					</div>
 
@@ -62,7 +62,7 @@
 <script type="text/ecmascript-6">
 
 	import Vue from 'vue'
-	import { getTrades } from '@/api/trade'
+	import { getTrades, setOrders } from '@/api/trade'
 	import BScroll from '@/base/better-scroll/src'
 
 	export default {
@@ -74,6 +74,11 @@
 		},
 		created() {
 			this.$bus.$on('purchase-confirm', (orders) => {
+
+				setOrders(orders).then((res) => {
+					console.log(res)
+				})
+
 				let trades = this.trades
 				let tradeIndex = -1
 				for (let i in trades) {
@@ -86,23 +91,26 @@
 				for (let i in orders) {
 					let orderIndex = -1
 					for (let j in trade.orders) {
-						console.log(orders[i].id, trade.orders[j].id)
-						if (orders[i].id == trade.orders[j].id) {
+						/* purchase */
+						if (orders[i].iid && orders[i].iid == trade.orders[j].iid && orders[i].sid == trade.orders[j].sid) {
+							orderIndex = j
+							break
+						}
+						/* purchase-post */
+						if (!orders[i].iid && orders[i].id == trade.orders[j].id) {
 							orderIndex = j
 							break
 						}
 					}
-					console.log('orderIndex', orderIndex)
 					if (orderIndex < 0) {
 						orderIndex = trade.orders.length
 						trade.orders.push(orders[i])
-						console.log(trade.orders)
 					} else {
 						Vue.set(trade.orders, orderIndex, orders[i])
 					}
 				}
 				trade.orders = trade.orders.filter((order) => {
-					return order.num > 0
+					return (order.title && order.num > 0) || (!order.title && order.message)
 				})
 			})
 
@@ -128,12 +136,15 @@
 		methods: {
 			orderTap(order) {
 				this.scrollY = this.scroll.y
-				this.$bus.$emit('purchase-show', { order: order })
+				if (order.title) {
+					this.$bus.$emit('purchase-show', {order})
+				} else {
+					this.$bus.$emit('purchase-post-show', order)
+				}
 			},
 			orderAddNewTap(tid) {
-				this.tid = tid
-				console.log(tid)
-				console.log('order add new tap')
+				this.scrollY = this.scroll.y
+				this.$bus.$emit('purchase-post-show', {tid})
 			},
 			orderSelectTap(tid) {
 				this.scrollY = this.scroll.y
@@ -146,19 +157,12 @@
 					}
 				})
 			}
-		},
-		components: {
-			// BScroll
 		}
 	}
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
 
-	.yuan
-		font-size: 12px
-		transform: scale(0.8)
-	
 	.trade-edit-wrapper
 		position: relative
 		height: 100%
@@ -171,6 +175,9 @@
 	.trade
 		font-size: 13px
 		color: #333
+		.yuan
+			font-size: 12px
+			transform: scale(0.8)
 		& + &
 			margin-top: 15px
 		.trade-info
@@ -207,6 +214,7 @@
 					color: #888
 					margin-top: 4px
 				.order-text-message
+					line-height: 1.4
 					font-size: 12px
 					color: #888
 					overflow: hidden

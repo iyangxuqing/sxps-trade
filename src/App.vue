@@ -8,6 +8,7 @@
   	</div>
     <TabBar/>
  		<Purchase></Purchase>
+ 		<PurchasePost></PurchasePost>
  		<Alert></Alert>
 		<ActionSheet></ActionSheet>
   </div>
@@ -18,6 +19,7 @@
 	import Header from '@/components/header/header'
 	import TabBar from '@/components/tabbar/tabbar'
 	import Purchase from '@/components/purchase/purchase'
+	import PurchasePost from '@/components/purchase/purchase-post'
 	import Alert from '@/components/alert/alert'
 	import ActionSheet from '@/components/actionsheet/actionsheet'
 	
@@ -35,6 +37,7 @@
 	  	Header,
 	  	TabBar,
 	  	Purchase,
+	  	PurchasePost,
 	  	Alert,
 	  	ActionSheet
 	  }

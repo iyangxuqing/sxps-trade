@@ -33,7 +33,15 @@
 				this.cid = cid
 			})
 			this.$bus.$on('purchase-confirm', () => {
-				this.$router.go(-1)
+				// 在订单编辑TradeEdit或商品选购GoodsBuyer进入购买，完成后都会触发purchase-confirm事件
+				// 由于应用了keep-alive组件，组件加载过后仍然留在内存中，
+				// 因此即使ItemsBuyer组件不再处于活动状态，它仍能响应purchase-confirm事件。
+				// 应该是仅在ItemsBuyer组件本身处于活动状态时，执行该事件
+				if (this.$route.name == 'TradeEdit-GoodsBuyer') {
+					this.$router.push({
+						name: 'TradeEdit'
+					})
+				}
 			})
 			getItems({onShelf: 1}).then((items) => {
 				this.items = items

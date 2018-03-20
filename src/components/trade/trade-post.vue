@@ -69,7 +69,9 @@
 					this.item = options.item
 					this.specsIndex = options.item.specs.length > 1 ? 1 : 0
 					this.show = true
-					this._setHeight()
+					this.$nextTick(() => {
+						this._setHeight()
+					})					
 				}
 				else if (options.order) {
 					this.order = options.order
@@ -192,15 +194,13 @@
 				Vue.set(specs, 'message', e.target.value)
 			},
 			_setHeight() {
-				setTimeout(() => {
-					let height = 0
-					this.children = this.$refs.purchase.children
-					for (let i = 0; i < this.children.length; i++) {
-						let child = this.children[i]
-						height += child.clientHeight
-					}
-					this.$refs.purchase.style.height = height + 'px'
-				})
+				let height = 0
+				this.children = this.$refs.purchase.children
+				for (let i = 0; i < this.children.length; i++) {
+					let child = this.children[i]
+					height += child.clientHeight
+				}
+				this.$refs.purchase.style.height = height + 'px'
 			}
 		}
 	}
@@ -360,7 +360,7 @@
 
 			.purchase-buttons
 				justify-content: space-between
-				font-size: 14px
+				font-size: 15px
 
 				.purchase-button
 					display: flex
